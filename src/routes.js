@@ -4,6 +4,24 @@ import { ObjectId } from "mongodb";
 
 const router = Router();
 
+// Return a few demo passengers for the UI dropdown
+router.get("/passengers/demo", async (req, res, next) => {
+  try {
+    const db = getDB();
+    const passengers = await db
+      .collection("passengers")
+      .find({})
+      .project({ name: 1 }) // only return _id + name
+      .limit(20)
+      .toArray();
+
+    res.json(passengers);
+  } catch (err) {
+    next(err);
+  }
+});
+
+
 // Health check
 router.get("/health", (req, res) => {
   res.json({ status: "ok", ts: new Date().toISOString() });
