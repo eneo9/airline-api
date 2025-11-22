@@ -3,6 +3,37 @@ import { getDB } from "./db.js";
 import { ObjectId } from "mongodb";
 
 const router = Router();
+// Return distinct origins and destinations for dropdowns
+router.get("/flights/meta", async (req, res, next) => {
+  try {
+    const db = getDB();
+    const result = await db
+      .collection("flights")
+      .aggregate([
+        {
+          $group: {
+            _id: null,
+            origins: { $addToSet: "$origin" },
+            destinations: { $addToSet: "$destination" }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            origins: 1,
+            destinations: 1
+          }
+        }
+      ])
+      .toArray();
+
+    const meta = result[0] || { origins: [], destinations: [] };
+    res.json(meta);
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 // Return a few demo passengers for the UI dropdown
 router.get("/passengers/demo", async (req, res, next) => {
